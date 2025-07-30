@@ -12,7 +12,7 @@ body{font-family:'Segoe UI',sans-serif;background:#f7f7f8;height:100vh;overflow:
 .sidebar{
   width:260px;background:#fff;border-right:1px solid #eee;
   box-shadow:3px 0 10px rgba(0,0,0,0.05);
-  display:flex;flex-direction:column;transition:0.3s;
+  display:flex;flex-direction:column;
 }
 .sidebar-header{padding:16px;font-weight:bold;font-size:18px;border-bottom:1px solid #eee}
 .new-chat{margin:12px;background:#10a37f;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
@@ -45,8 +45,14 @@ body{font-family:'Segoe UI',sans-serif;background:#f7f7f8;height:100vh;overflow:
 /* Input */
 .input-container{padding:16px;border-top:1px solid #eee;background:#fff;display:flex;gap:12px}
 .message-input{flex:1;padding:12px 14px;border:1px solid #ddd;border-radius:12px;font-size:16px;resize:none;max-height:120px;line-height:1.5;box-shadow:inset 0 2px 4px rgba(0,0,0,0.05)}
-.send-button{width:50px;height:50px;background:#10a37f url('https://files.catbox.moe/r1px36.png') center/50% no-repeat;border:none;border-radius:12px;cursor:pointer;transition:0.2s;box-shadow:0 3px 6px rgba(0,0,0,0.2)}
-.send-button:hover{background-color:#0d8f6f}
+.send-button{
+  width:50px;height:50px;background:#10a37f;border:none;border-radius:12px;cursor:pointer;
+  transition:0.2s;box-shadow:0 3px 6px rgba(0,0,0,0.2);display:flex;justify-content:center;align-items:center
+}
+.send-button::before{
+  content:"↑";color:white;font-weight:bold;font-size:20px;transform:translateY(-2px);
+}
+.send-button:hover{background:#0d8f6f}
 
 .chat-messages::-webkit-scrollbar{width:6px}
 .chat-messages::-webkit-scrollbar-thumb{background:#ccc;border-radius:3px}
@@ -123,6 +129,7 @@ class ChatApp {
     this.addMessage(msg,'user');this.chats[this.currentChatId].push({sender:'user',content:msg});this.messageInput.value='';this.messageInput.style.height='auto';this.saveChats();
     try{
       const res=await fetch(`${this.apiEndpoint}?apikey=${this.apiKey}&text=${encodeURIComponent(msg)}`);
+      if(!res.ok) throw new Error(`HTTP ${res.status}`);
       const data=await res.json();
       const reply=data.result||data.error||"Error: No response";
       this.addMessage(reply,'ai');this.chats[this.currentChatId].push({sender:'ai',content:reply});this.saveChats();this.renderChatList();
@@ -151,4 +158,4 @@ class ChatApp {
 document.addEventListener('DOMContentLoaded',()=>new ChatApp());
 </script>
 </body>
-</html>
+</html> p
