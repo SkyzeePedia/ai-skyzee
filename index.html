@@ -3,198 +3,172 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Skyzee AI Chat</title>
+<title>Skyzee AI</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
 <style>
-    * { box-sizing: border-box; }
-    body {
-        margin: 0; font-family: 'Segoe UI', sans-serif;
-        background: #fff; display: flex; height: 100vh;
-    }
-    /* Sidebar */
-    .sidebar {
-        width: 250px; background: #f9f9f9;
-        border-right: 1px solid #eee;
-        position: fixed; top: 0; left: -250px; bottom: 0;
-        display: flex; flex-direction: column;
-        transition: 0.3s; z-index: 100; padding: 10px;
-    }
-    .sidebar.active { left: 0; }
-    .new-chat {
-        background: #000; color: #fff;
-        border: none; padding: 10px; margin-bottom: 10px;
-        cursor: pointer; border-radius: 5px;
-    }
-    #chat-list { flex: 1; overflow-y: auto; }
-    .chat-item {padding:8px;margin:5px 0;border-radius:5px;background:#eee;cursor:pointer;}
-    .close-sidebar {
-        background: none; border: none; font-size: 20px; margin: 10px auto; cursor: pointer;
-    }
-
-    /* Main */
-    .main { flex: 1; display: flex; flex-direction: column; width: 100%; }
-    header {
-        display: flex; align-items: center; justify-content: center;
-        position: relative; padding: 15px; border-bottom: 1px solid #eee;
-    }
-    .menu-btn {
-        position: absolute; left: 15px; background: none; border: none;
-        font-size: 20px; cursor: pointer;
-    }
-
-    /* Chat Area */
-    .chat-container {
-        flex: 1; overflow-y: auto; padding: 20px;
-        background: #fff;
-    }
-    .welcome { text-align: center; margin-top: 50px; }
-
-    /* Chat bubble */
-    .chat-message {
-        margin-bottom: 12px; padding: 12px; border-radius: 10px;
-        max-width: 80%; word-wrap: break-word; white-space: pre-wrap;
-        display: inline-block;
-    }
-    .chat-user { background: #000; color: #fff; margin-left: auto; }
-    .chat-ai { background: #f1f1f1; margin-right: auto; }
-
-    /* File bubble */
-    .chat-file {
-        border: 1px solid #ccc; background: #fff;
-        margin-bottom: 12px; padding: 10px; border-radius: 10px;
-        max-width: 80%; display: flex; align-items: center; gap: 8px;
-    }
-    .chat-file a { text-decoration: none; color: #000; font-weight: 600; }
-
-    /* Input area */
-    .chat-input {
-        display: flex; border-top: 1px solid #eee; padding: 10px;
-        align-items: center; gap: 8px;
-    }
-    .chat-input input[type="text"] {
-        flex: 1; padding: 12px; border-radius: 20px;
-        border: 1px solid #ccc; outline: none;
-    }
-    .file-btn, .menu-btn {
-        background: none; border: none; font-size: 18px; cursor: pointer;
-        color: #333;
-    }
-    #send-btn {
-        background: #ccc; border: none; color: white;
-        border-radius: 50%; width: 40px; height: 40px;
-        cursor: pointer; font-size: 18px;
-        display: flex; align-items: center; justify-content: center;
-    }
-    #send-btn.active { background: #000; }
+    body{margin:0;font-family:'Segoe UI',sans-serif;display:flex;flex-direction:column;height:100vh;background:#f7f7f7;}
+    header{background:#fff;border-bottom:1px solid #ddd;padding:10px;text-align:center;position:relative}
+    header h1{margin:0;font-size:18px}
+    .menu-btn{position:absolute;left:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:20px;cursor:pointer}
+    .chat-container{flex:1;overflow-y:auto;padding:20px}
+    .welcome{text-align:center;margin-top:40px;color:#444}
+    .message{max-width:80%;padding:12px;margin:10px;border-radius:12px;word-wrap:break-word;white-space:pre-wrap}
+    .ai{background:#eee;color:#000;margin-right:auto}
+    .user{background:#000;color:#fff;margin-left:auto}
+    .chat-input{display:flex;padding:10px;background:#fff;border-top:1px solid #ddd;align-items:center;gap:10px}
+    .chat-input input[type=text]{flex:1;padding:12px;border-radius:20px;border:1px solid #ccc;outline:none}
+    #send-btn{width:40px;height:40px;border-radius:50%;border:none;background:#ccc;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px}
+    #send-btn.active{background:#000}
+    select{padding:6px;border-radius:8px;border:1px solid #ccc;outline:none}
+    .chat-file{background:#fff;border:1px solid #ccc;padding:10px;border-radius:8px;display:inline-flex;align-items:center;gap:8px;max-width:80%}
+    .chat-file a{text-decoration:none;color:#000;font-weight:bold}
+    pre{background:#1e1e1e;color:#fff;padding:10px;border-radius:8px;overflow-x:auto;position:relative;margin:10px 0;}
+    pre code{font-family:monospace;font-size:14px;}
+    .copy-btn{position:absolute;top:5px;right:5px;background:#444;color:#fff;border:none;padding:3px 8px;border-radius:5px;font-size:12px;cursor:pointer;}
 </style>
 </head>
 <body>
 
-<!-- Sidebar -->
-<div class="sidebar" id="sidebar">
-  <button class="new-chat" onclick="newChat()"><i class="fas fa-plus"></i> New Chat</button>
-  <div id="chat-list"></div>
-  <button class="close-sidebar" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
-</div>
+<header>
+  <button class="menu-btn"><i class="fas fa-bars"></i></button>
+  <h1>New Chat</h1>
+</header>
 
-<!-- Main Chat -->
-<div class="main">
-  <header>
-    <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-    <h1>New Chat</h1>
-  </header>
-
-  <div class="chat-container" id="chat-container">
-    <div class="welcome">
-      <h2>Hi! What's Going On?</h2>
-      <p>I'm here to help you with questions, creative projects, analysis, or just have a conversation. What would you like to explore today?</p>
-    </div>
-  </div>
-
-  <div class="chat-input">
-    <select id="model-select"></select>
-    <input type="file" id="file-input" multiple hidden>
-    <button class="file-btn" onclick="document.getElementById('file-input').click()"><i class="fas fa-paperclip"></i></button>
-    <input type="text" id="chat-input" placeholder="Ask AI..." oninput="toggleSendBtn()">
-    <button id="send-btn" onclick="sendMessage()"><i class="fas fa-arrow-up"></i></button>
+<div class="chat-container" id="chat-container">
+  <div class="welcome">
+    <h2>Hi! What's Going On?</h2>
+    <p>I'm here to help you with questions, creative projects, analysis, or just have a conversation.</p>
   </div>
 </div>
 
+<div class="chat-input">
+  <select id="model-select"></select>
+  <input type="file" id="file-input" multiple hidden>
+  <button onclick="document.getElementById('file-input').click()"><i class="fas fa-paperclip"></i></button>
+  <input type="text" id="chat-input" placeholder="Ask AI..." oninput="toggleSendBtn()">
+  <button id="send-btn" onclick="sendMessage()"><i class="fas fa-arrow-up"></i></button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
 <script>
-const chatContainer = document.getElementById("chat-container");
-const chatInput = document.getElementById("chat-input");
-const sendBtn = document.getElementById("send-btn");
-const sidebar = document.getElementById("sidebar");
-const chatList = document.getElementById("chat-list");
-const modelSelect = document.getElementById("model-select");
-const fileInput = document.getElementById("file-input");
+const models = [
+  'gpt-4.1-nano','gpt-4.1-mini','gpt-4.1','o4-mini',
+  'deepseek-r1','deepseek-v3','claude-3.7','gemini-2.0',
+  'grok-3-mini','qwen-qwq-32b','gpt-4o','o3',
+  'gpt-4o-mini','llama-3.3'
+];
+const modelSelect=document.getElementById('model-select');
+models.forEach(m=>{
+  const opt=document.createElement('option');opt.value=m;opt.textContent=m;modelSelect.appendChild(opt);
+});
+modelSelect.value='o4-mini';
 
-async function loadModels(){
-  try{
-    // Ambil daftar model dari endpoint
-    const res=await fetch('https://apikey.skyzee.xyz/ai/chat-ai?apikey=skyzee&question=ping');
-    const data=await res.json();
-    if(data && data.models){
-      data.models.forEach(m=>{
-        const opt=document.createElement('option');
-        opt.value=m; opt.textContent=m;
-        modelSelect.appendChild(opt);
-      });
-      modelSelect.value=data.models.includes('o4-mini')?'o4-mini':data.models[0];
-    }
-  }catch(e){ console.log('Gagal load models',e); }
-}
-loadModels();
+const chatContainer=document.getElementById("chat-container");
+const chatInput=document.getElementById("chat-input");
+const sendBtn=document.getElementById("send-btn");
+const fileInput=document.getElementById("file-input");
 
-function toggleSidebar(){ sidebar.classList.toggle("active"); }
-
-function toggleSendBtn(){ 
-  sendBtn.classList.toggle("active", chatInput.value.trim()!=="" || fileInput.files.length>0);
+function toggleSendBtn(){
+  sendBtn.classList.toggle("active",chatInput.value.trim()!==""||fileInput.files.length>0);
 }
 
-function addMessage(content,sender='ai',type='text'){
+function addUserMessage(content){
   let msg=document.createElement('div');
-  if(type==='file'){
-    msg.className='chat-file '+(sender==='user'?'chat-user':'chat-ai');
-    const url=URL.createObjectURL(content);
-    msg.innerHTML=`<i class="fas fa-file"></i> <a href="${url}" download="${content.name}">${content.name}</a>`;
-  } else {
-    msg.className='chat-message '+(sender==='user'?'chat-user':'chat-ai');
-    msg.textContent=content;
-  }
+  msg.className='message user';
+  msg.textContent=content;
   chatContainer.appendChild(msg);
   chatContainer.scrollTop=chatContainer.scrollHeight;
 }
 
+function addFileMessage(file){
+  let msg=document.createElement('div');
+  msg.className='chat-file user';
+  const url=URL.createObjectURL(file);
+  msg.innerHTML=`<i class="fas fa-file"></i> <a href="${url}" download="${file.name}">${file.name}</a>`;
+  chatContainer.appendChild(msg);
+  chatContainer.scrollTop=chatContainer.scrollHeight;
+}
+
+function addAIMessage(content){
+  // Pisahkan code block
+  const container=document.createElement('div');
+  container.className='message ai';
+  
+  // Split berdasarkan triple backtick
+  const parts = content.split(/```/);
+  for(let i=0;i<parts.length;i++){
+    if(i%2===0){
+      if(parts[i].trim()) {
+        let span=document.createElement('div');
+        span.textContent=parts[i].trim();
+        container.appendChild(span);
+      }
+    }else{
+      // ini code
+      const langMatch=parts[i].match(/^(\w+)\n/);
+      let lang=''; let codeText=parts[i];
+      if(langMatch){
+        lang=langMatch[1]; 
+        codeText=parts[i].replace(/^(\w+)\n/,'');
+      }
+      let pre=document.createElement('pre');
+      let code=document.createElement('code');
+      if(lang) code.className='language-'+lang;
+      code.textContent=codeText.trim();
+      let copyBtn=document.createElement('button');
+      copyBtn.textContent='Copy';
+      copyBtn.className='copy-btn';
+      copyBtn.onclick=()=>navigator.clipboard.writeText(codeText.trim());
+      pre.appendChild(copyBtn);
+      pre.appendChild(code);
+      container.appendChild(pre);
+      hljs.highlightElement(code);
+    }
+  }
+
+  chatContainer.appendChild(container);
+  chatContainer.scrollTop=chatContainer.scrollHeight;
+}
+
+function typeEffect(text, callback){
+  let idx=0;
+  let current="";
+  let interval=setInterval(()=>{
+    current+=text[idx++];
+    chatContainer.lastChild.textContent=current;
+    chatContainer.scrollTop=chatContainer.scrollHeight;
+    if(idx>=text.length){
+      clearInterval(interval);
+      if(callback) callback();
+    }
+  },30);
+}
+
 async function sendMessage(){
   const question=chatInput.value.trim();
-  const model=modelSelect.value||'o4-mini';
+  const model=modelSelect.value;
   const files=[...fileInput.files];
   if(!question && files.length===0) return;
 
-  if(question) addMessage(question,'user');
-  for(let file of files) addMessage(file,'user','file');
+  if(question) addUserMessage(question);
+  for(let file of files) addFileMessage(file);
 
-  chatInput.value=''; fileInput.value=''; toggleSendBtn();
+  chatInput.value='';fileInput.value='';toggleSendBtn();
 
   if(question){
     try{
       const url=`https://apikey.skyzee.xyz/ai/chat-ai?apikey=skyzee&question=${encodeURIComponent(question)}&model=${model}`;
       const res=await fetch(url);
       const data=await res.json();
-      if(data.status) addMessage(data.response||'No response');
-      else addMessage(data.error||'Error');
-    }catch(e){ addMessage('Error connecting to AI.'); }
+      if(data.status){
+        let clean=(data.response||'No response').replace(/<think>[\s\S]*?<\/think>/,'').trim();
+        addAIMessage(clean);
+      }else addAIMessage(data.error||'Error');
+    }catch(e){addAIMessage('Error connecting to AI.');}
   }
 }
-
-function newChat(){
-  chatContainer.innerHTML=`<div class="welcome">
-      <h2>Hi! What's Going On?</h2>
-      <p>I'm here to help you with questions, creative projects, analysis, or just have a conversation. What would you like to explore today?</p>
-    </div>`;
-  toggleSidebar();
-}
 </script>
+
 </body>
 </html>
