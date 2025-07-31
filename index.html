@@ -9,9 +9,8 @@
 <style>
     *{box-sizing:border-box}
     body{margin:0;font-family:'Segoe UI',sans-serif;display:flex;flex-direction:column;height:100vh;background:#f7f7f7;}
-    header{background:#fff;border-bottom:1px solid #ddd;padding:12px;text-align:center;position:relative;flex-shrink:0}
+    header{background:#fff;border-bottom:1px solid #ddd;padding:12px;text-align:center;flex-shrink:0}
     header h1{margin:0;font-size:18px}
-    .menu-btn{position:absolute;left:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:20px;cursor:pointer}
     .chat-container{flex:1;overflow-y:auto;padding:20px;scroll-behavior:smooth}
     .message{max-width:75%;padding:12px;margin:10px;border-radius:12px;word-wrap:break-word;white-space:pre-wrap;animation:fadeIn .2s ease-in-out;}
     .ai{background:#eaeaea;color:#000;margin-right:auto}
@@ -20,7 +19,6 @@
     .chat-input input[type=text]{flex:1;padding:12px;border-radius:20px;border:1px solid #ccc;outline:none}
     #send-btn{width:42px;height:42px;border-radius:50%;border:none;background:#ccc;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:0.2s;}
     #send-btn.active{background:#000}
-    select{padding:6px;border-radius:8px;border:1px solid #ccc;outline:none}
     .chat-file{background:#fff;border:1px solid #ccc;padding:10px;border-radius:8px;display:inline-flex;align-items:center;gap:8px;max-width:75%;margin:10px;}
     .chat-file a{text-decoration:none;color:#000;font-weight:bold}
     pre{background:#1e1e1e;color:#fff;padding:10px;border-radius:8px;overflow-x:auto;position:relative;margin:10px 0;}
@@ -32,19 +30,12 @@
 <body>
 
 <header>
-  <button class="menu-btn"><i class="fas fa-bars"></i></button>
-  <h1>New Chat</h1>
+  <h1>Skyzee AI Chat</h1>
 </header>
 
-<div class="chat-container" id="chat-container">
-  <div style="text-align:center;margin-top:40px;color:#444">
-    <h2>Hi! What's Going On?</h2>
-    <p>I'm here to help with questions, creative projects, or just have a conversation.</p>
-  </div>
-</div>
+<div class="chat-container" id="chat-container"></div>
 
 <div class="chat-input">
-  <select id="model-select"></select>
   <input type="file" id="file-input" multiple hidden>
   <button onclick="document.getElementById('file-input').click()"><i class="fas fa-paperclip"></i></button>
   <input type="text" id="chat-input" placeholder="Ask AI..." oninput="toggleSendBtn()">
@@ -57,27 +48,6 @@ const chatContainer=document.getElementById("chat-container");
 const chatInput=document.getElementById("chat-input");
 const sendBtn=document.getElementById("send-btn");
 const fileInput=document.getElementById("file-input");
-const modelSelect=document.getElementById("model-select");
-
-// Ambil model otomatis dari endpoint
-fetch('https://apikey.skyzee.xyz/ai/models?apikey=skyzee')
-  .then(r=>r.json())
-  .then(data=>{
-    if(data.models){
-      data.models.forEach(m=>{
-        const opt=document.createElement('option');
-        opt.value=m;
-        opt.textContent=m;
-        modelSelect.appendChild(opt);
-      });
-      modelSelect.value=data.models[0];
-    }
-  }).catch(()=>{ 
-    ['o4-mini','gpt-4o','gpt-4o-mini'].forEach(m=>{
-      const opt=document.createElement('option');
-      opt.value=m;opt.textContent=m;modelSelect.appendChild(opt);
-    });
-  });
 
 function toggleSendBtn(){
   sendBtn.classList.toggle("active",chatInput.value.trim()!==""||fileInput.files.length>0);
@@ -105,7 +75,6 @@ function addAIMessageAnimated(content){
   container.className='message ai';
   chatContainer.appendChild(container);
 
-  // Pisah jadi karakter
   let idx=0;
   function typeNext(){
     container.innerHTML = parseMarkdown(content.slice(0, idx++));
@@ -118,7 +87,6 @@ function addAIMessageAnimated(content){
   typeNext();
 }
 
-// Markdown ke HTML simple + code block
 function parseMarkdown(text){
   return text
     .replace(/```(\w+)?\n([\s\S]*?)```/g,(m,lang,code)=>{
@@ -131,7 +99,6 @@ function parseMarkdown(text){
 
 async function sendMessage(){
   const question=chatInput.value.trim();
-  const model=modelSelect.value;
   const files=[...fileInput.files];
   if(!question && files.length===0) return;
 
@@ -142,7 +109,7 @@ async function sendMessage(){
 
   if(question){
     try{
-      const url=`https://apikey.skyzee.xyz/ai/chat-ai?apikey=skyzee&question=${encodeURIComponent(question)}&model=${model}`;
+      const url=`https://apikey.skyzee.xyz/ai/chat-ai?apikey=skyzee&question=${encodeURIComponent(question)}&model=grok-3-mini`;
       const res=await fetch(url);
       const data=await res.json();
       if(data.status){
