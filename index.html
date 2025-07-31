@@ -4,136 +4,86 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Skyzee AI Chat</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
+    * { box-sizing: border-box; }
     body {
-        margin: 0;
-        font-family: 'Segoe UI', sans-serif;
-        background: #fff;
-        display: flex;
-        height: 100vh;
+        margin: 0; font-family: 'Segoe UI', sans-serif;
+        background: #fff; display: flex; height: 100vh;
     }
     /* Sidebar */
     .sidebar {
-        width: 250px;
-        background: #f9f9f9;
+        width: 250px; background: #f9f9f9;
         border-right: 1px solid #eee;
-        position: fixed;
-        top: 0; left: -250px;
-        bottom: 0;
-        display: flex;
-        flex-direction: column;
-        transition: 0.3s;
-        z-index: 100;
-        padding: 10px;
+        position: fixed; top: 0; left: -250px; bottom: 0;
+        display: flex; flex-direction: column;
+        transition: 0.3s; z-index: 100; padding: 10px;
     }
     .sidebar.active { left: 0; }
     .new-chat {
-        background: #000;
-        color: #fff;
-        border: none;
-        padding: 10px;
-        margin-bottom: 10px;
-        cursor: pointer;
-        border-radius: 5px;
+        background: #000; color: #fff;
+        border: none; padding: 10px; margin-bottom: 10px;
+        cursor: pointer; border-radius: 5px;
     }
     #chat-list { flex: 1; overflow-y: auto; }
     .chat-item {padding:8px;margin:5px 0;border-radius:5px;background:#eee;cursor:pointer;}
     .close-sidebar {
-        background: none;
-        border: none;
-        font-size: 20px;
-        margin: 10px auto;
-        cursor: pointer;
+        background: none; border: none; font-size: 20px; margin: 10px auto; cursor: pointer;
     }
 
     /* Main */
-    .main {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        margin-left: 0;
-        width: 100%;
-    }
+    .main { flex: 1; display: flex; flex-direction: column; width: 100%; }
     header {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        padding: 15px;
-        border-bottom: 1px solid #eee;
+        display: flex; align-items: center; justify-content: center;
+        position: relative; padding: 15px; border-bottom: 1px solid #eee;
     }
     .menu-btn {
-        position: absolute;
-        left: 15px;
-        background: none;
-        border: none;
-        font-size: 20px;
-        cursor: pointer;
+        position: absolute; left: 15px; background: none; border: none;
+        font-size: 20px; cursor: pointer;
     }
 
+    /* Chat Area */
     .chat-container {
-        flex: 1;
-        overflow-y: auto;
-        padding: 20px;
+        flex: 1; overflow-y: auto; padding: 20px;
+        background: #fff;
     }
-
-    .welcome {
-        text-align: center;
-        margin-top: 50px;
-    }
+    .welcome { text-align: center; margin-top: 50px; }
 
     /* Chat bubble */
     .chat-message {
-        margin-bottom: 10px;
-        padding: 10px;
-        border-radius: 10px;
-        max-width: 80%;
-        word-wrap: break-word;
-        white-space: pre-wrap;
+        margin-bottom: 12px; padding: 12px; border-radius: 10px;
+        max-width: 80%; word-wrap: break-word; white-space: pre-wrap;
+        display: inline-block;
     }
     .chat-user { background: #000; color: #fff; margin-left: auto; }
     .chat-ai { background: #f1f1f1; margin-right: auto; }
 
     /* File bubble */
     .chat-file {
-        border: 1px solid #ccc;
-        background: #fff;
-        margin-bottom: 10px;
-        padding: 10px;
-        border-radius: 10px;
-        max-width: 80%;
+        border: 1px solid #ccc; background: #fff;
+        margin-bottom: 12px; padding: 10px; border-radius: 10px;
+        max-width: 80%; display: flex; align-items: center; gap: 8px;
     }
-    .chat-file a {text-decoration:none;color:#000;font-weight:bold;}
+    .chat-file a { text-decoration: none; color: #000; font-weight: 600; }
 
     /* Input area */
     .chat-input {
-        display: flex;
-        border-top: 1px solid #eee;
-        padding: 10px;
-        align-items: center;
-        gap: 5px;
+        display: flex; border-top: 1px solid #eee; padding: 10px;
+        align-items: center; gap: 8px;
     }
     .chat-input input[type="text"] {
-        flex: 1;
-        padding: 10px;
-        border-radius: 20px;
-        border: 1px solid #ccc;
-        outline: none;
+        flex: 1; padding: 12px; border-radius: 20px;
+        border: 1px solid #ccc; outline: none;
     }
-    .file-btn {
-        background: none;
-        border: none;
-        font-size: 20px;
-        cursor: pointer;
+    .file-btn, .menu-btn {
+        background: none; border: none; font-size: 18px; cursor: pointer;
+        color: #333;
     }
     #send-btn {
-        background: #ccc;
-        border: none;
-        color: white;
-        border-radius: 50%;
-        width: 40px; height: 40px;
-        cursor: pointer;
-        font-size: 20px;
+        background: #ccc; border: none; color: white;
+        border-radius: 50%; width: 40px; height: 40px;
+        cursor: pointer; font-size: 18px;
+        display: flex; align-items: center; justify-content: center;
     }
     #send-btn.active { background: #000; }
 </style>
@@ -142,15 +92,15 @@
 
 <!-- Sidebar -->
 <div class="sidebar" id="sidebar">
-  <button class="new-chat" onclick="newChat()">+ New Chat</button>
+  <button class="new-chat" onclick="newChat()"><i class="fas fa-plus"></i> New Chat</button>
   <div id="chat-list"></div>
-  <button class="close-sidebar" onclick="toggleSidebar()">✕</button>
+  <button class="close-sidebar" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
 </div>
 
 <!-- Main Chat -->
 <div class="main">
   <header>
-    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+    <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
     <h1>New Chat</h1>
   </header>
 
@@ -164,9 +114,9 @@
   <div class="chat-input">
     <select id="model-select"></select>
     <input type="file" id="file-input" multiple hidden>
-    <button class="file-btn" onclick="document.getElementById('file-input').click()">📎</button>
+    <button class="file-btn" onclick="document.getElementById('file-input').click()"><i class="fas fa-paperclip"></i></button>
     <input type="text" id="chat-input" placeholder="Ask AI..." oninput="toggleSendBtn()">
-    <button id="send-btn" onclick="sendMessage()">➤</button>
+    <button id="send-btn" onclick="sendMessage()"><i class="fas fa-arrow-up"></i></button>
   </div>
 </div>
 
@@ -179,33 +129,35 @@ const chatList = document.getElementById("chat-list");
 const modelSelect = document.getElementById("model-select");
 const fileInput = document.getElementById("file-input");
 
-const models = [
-  'gpt-4.1-nano', 'gpt-4.1-mini', 'gpt-4.1', 'o4-mini',
-  'deepseek-r1', 'deepseek-v3', 'claude-3.7', 'gemini-2.0',
-  'grok-3-mini', 'qwen-qwq-32b', 'gpt-4o', 'o3',
-  'gpt-4o-mini', 'llama-3.3'
-];
+async function loadModels(){
+  try{
+    // Ambil daftar model dari endpoint
+    const res=await fetch('https://apikey.skyzee.xyz/ai/chat-ai?apikey=skyzee&question=ping');
+    const data=await res.json();
+    if(data && data.models){
+      data.models.forEach(m=>{
+        const opt=document.createElement('option');
+        opt.value=m; opt.textContent=m;
+        modelSelect.appendChild(opt);
+      });
+      modelSelect.value=data.models.includes('o4-mini')?'o4-mini':data.models[0];
+    }
+  }catch(e){ console.log('Gagal load models',e); }
+}
+loadModels();
 
-models.forEach(m => {
-  const opt = document.createElement('option');
-  opt.value = m;
-  opt.textContent = m;
-  modelSelect.appendChild(opt);
-});
-modelSelect.value = 'o4-mini';
+function toggleSidebar(){ sidebar.classList.toggle("active"); }
 
-function toggleSidebar() { sidebar.classList.toggle("active"); }
-
-function toggleSendBtn() {
-  sendBtn.classList.toggle("active", chatInput.value.trim() !== "" || fileInput.files.length>0);
+function toggleSendBtn(){ 
+  sendBtn.classList.toggle("active", chatInput.value.trim()!=="" || fileInput.files.length>0);
 }
 
-function addMessage(content, sender='ai', type='text', filename=null) {
-  let msg = document.createElement('div');
+function addMessage(content,sender='ai',type='text'){
+  let msg=document.createElement('div');
   if(type==='file'){
     msg.className='chat-file '+(sender==='user'?'chat-user':'chat-ai');
-    const url = URL.createObjectURL(content);
-    msg.innerHTML=`<a href="${url}" download="${content.name}">📄 ${content.name}</a>`;
+    const url=URL.createObjectURL(content);
+    msg.innerHTML=`<i class="fas fa-file"></i> <a href="${url}" download="${content.name}">${content.name}</a>`;
   } else {
     msg.className='chat-message '+(sender==='user'?'chat-user':'chat-ai');
     msg.textContent=content;
@@ -214,28 +166,25 @@ function addMessage(content, sender='ai', type='text', filename=null) {
   chatContainer.scrollTop=chatContainer.scrollHeight;
 }
 
-async function sendMessage() {
-  const question = chatInput.value.trim();
-  const model = modelSelect.value || 'o4-mini';
-  const files = [...fileInput.files];
+async function sendMessage(){
+  const question=chatInput.value.trim();
+  const model=modelSelect.value||'o4-mini';
+  const files=[...fileInput.files];
   if(!question && files.length===0) return;
 
   if(question) addMessage(question,'user');
   for(let file of files) addMessage(file,'user','file');
 
-  chatInput.value='';
-  fileInput.value='';
-  toggleSendBtn();
+  chatInput.value=''; fileInput.value=''; toggleSendBtn();
 
   if(question){
-    try {
-      const url = `https://apikey.skyzee.xyz/ai/chat-ai?apikey=skyzee&question=${encodeURIComponent(question)}&model=${model}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      addMessage(data.answer || 'No response');
-    } catch(e){
-      addMessage('Error connecting to AI.');
-    }
+    try{
+      const url=`https://apikey.skyzee.xyz/ai/chat-ai?apikey=skyzee&question=${encodeURIComponent(question)}&model=${model}`;
+      const res=await fetch(url);
+      const data=await res.json();
+      if(data.status) addMessage(data.response||'No response');
+      else addMessage(data.error||'Error');
+    }catch(e){ addMessage('Error connecting to AI.'); }
   }
 }
 
@@ -247,6 +196,5 @@ function newChat(){
   toggleSidebar();
 }
 </script>
-
 </body>
 </html>
