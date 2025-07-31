@@ -3,29 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Skyzee AI</title>
+<title>Skyzee AI Chat</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
 <style>
+    *{box-sizing:border-box}
     body{margin:0;font-family:'Segoe UI',sans-serif;display:flex;flex-direction:column;height:100vh;background:#f7f7f7;}
-    header{background:#fff;border-bottom:1px solid #ddd;padding:10px;text-align:center;position:relative}
+    header{background:#fff;border-bottom:1px solid #ddd;padding:12px;text-align:center;position:relative;flex-shrink:0}
     header h1{margin:0;font-size:18px}
     .menu-btn{position:absolute;left:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:20px;cursor:pointer}
-    .chat-container{flex:1;overflow-y:auto;padding:20px}
-    .welcome{text-align:center;margin-top:40px;color:#444}
-    .message{max-width:80%;padding:12px;margin:10px;border-radius:12px;word-wrap:break-word;white-space:pre-wrap}
-    .ai{background:#eee;color:#000;margin-right:auto}
+    .chat-container{flex:1;overflow-y:auto;padding:20px;scroll-behavior:smooth}
+    .message{max-width:75%;padding:12px;margin:10px;border-radius:12px;word-wrap:break-word;white-space:pre-wrap;animation:fadeIn .2s ease-in-out;}
+    .ai{background:#eaeaea;color:#000;margin-right:auto}
     .user{background:#000;color:#fff;margin-left:auto}
-    .chat-input{display:flex;padding:10px;background:#fff;border-top:1px solid #ddd;align-items:center;gap:10px}
+    .chat-input{display:flex;padding:12px;background:#fff;border-top:1px solid #ddd;align-items:center;gap:10px;flex-shrink:0}
     .chat-input input[type=text]{flex:1;padding:12px;border-radius:20px;border:1px solid #ccc;outline:none}
-    #send-btn{width:40px;height:40px;border-radius:50%;border:none;background:#ccc;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px}
+    #send-btn{width:42px;height:42px;border-radius:50%;border:none;background:#ccc;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:0.2s;}
     #send-btn.active{background:#000}
     select{padding:6px;border-radius:8px;border:1px solid #ccc;outline:none}
-    .chat-file{background:#fff;border:1px solid #ccc;padding:10px;border-radius:8px;display:inline-flex;align-items:center;gap:8px;max-width:80%}
+    .chat-file{background:#fff;border:1px solid #ccc;padding:10px;border-radius:8px;display:inline-flex;align-items:center;gap:8px;max-width:75%;margin:10px;}
     .chat-file a{text-decoration:none;color:#000;font-weight:bold}
     pre{background:#1e1e1e;color:#fff;padding:10px;border-radius:8px;overflow-x:auto;position:relative;margin:10px 0;}
     pre code{font-family:monospace;font-size:14px;}
     .copy-btn{position:absolute;top:5px;right:5px;background:#444;color:#fff;border:none;padding:3px 8px;border-radius:5px;font-size:12px;cursor:pointer;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
 </style>
 </head>
 <body>
@@ -36,9 +37,9 @@
 </header>
 
 <div class="chat-container" id="chat-container">
-  <div class="welcome">
+  <div style="text-align:center;margin-top:40px;color:#444">
     <h2>Hi! What's Going On?</h2>
-    <p>I'm here to help you with questions, creative projects, analysis, or just have a conversation.</p>
+    <p>I'm here to help with questions, creative projects, or just have a conversation.</p>
   </div>
 </div>
 
@@ -52,22 +53,31 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
 <script>
-const models = [
-  'gpt-4.1-nano','gpt-4.1-mini','gpt-4.1','o4-mini',
-  'deepseek-r1','deepseek-v3','claude-3.7','gemini-2.0',
-  'grok-3-mini','qwen-qwq-32b','gpt-4o','o3',
-  'gpt-4o-mini','llama-3.3'
-];
-const modelSelect=document.getElementById('model-select');
-models.forEach(m=>{
-  const opt=document.createElement('option');opt.value=m;opt.textContent=m;modelSelect.appendChild(opt);
-});
-modelSelect.value='o4-mini';
-
 const chatContainer=document.getElementById("chat-container");
 const chatInput=document.getElementById("chat-input");
 const sendBtn=document.getElementById("send-btn");
 const fileInput=document.getElementById("file-input");
+const modelSelect=document.getElementById("model-select");
+
+// Ambil model otomatis dari endpoint
+fetch('https://apikey.skyzee.xyz/ai/models?apikey=skyzee')
+  .then(r=>r.json())
+  .then(data=>{
+    if(data.models){
+      data.models.forEach(m=>{
+        const opt=document.createElement('option');
+        opt.value=m;
+        opt.textContent=m;
+        modelSelect.appendChild(opt);
+      });
+      modelSelect.value=data.models[0];
+    }
+  }).catch(()=>{ 
+    ['o4-mini','gpt-4o','gpt-4o-mini'].forEach(m=>{
+      const opt=document.createElement('option');
+      opt.value=m;opt.textContent=m;modelSelect.appendChild(opt);
+    });
+  });
 
 function toggleSendBtn(){
   sendBtn.classList.toggle("active",chatInput.value.trim()!==""||fileInput.files.length>0);
@@ -90,59 +100,33 @@ function addFileMessage(file){
   chatContainer.scrollTop=chatContainer.scrollHeight;
 }
 
-function addAIMessage(content){
-  // Pisahkan code block
+function addAIMessageAnimated(content){
   const container=document.createElement('div');
   container.className='message ai';
-  
-  // Split berdasarkan triple backtick
-  const parts = content.split(/```/);
-  for(let i=0;i<parts.length;i++){
-    if(i%2===0){
-      if(parts[i].trim()) {
-        let span=document.createElement('div');
-        span.textContent=parts[i].trim();
-        container.appendChild(span);
-      }
-    }else{
-      // ini code
-      const langMatch=parts[i].match(/^(\w+)\n/);
-      let lang=''; let codeText=parts[i];
-      if(langMatch){
-        lang=langMatch[1]; 
-        codeText=parts[i].replace(/^(\w+)\n/,'');
-      }
-      let pre=document.createElement('pre');
-      let code=document.createElement('code');
-      if(lang) code.className='language-'+lang;
-      code.textContent=codeText.trim();
-      let copyBtn=document.createElement('button');
-      copyBtn.textContent='Copy';
-      copyBtn.className='copy-btn';
-      copyBtn.onclick=()=>navigator.clipboard.writeText(codeText.trim());
-      pre.appendChild(copyBtn);
-      pre.appendChild(code);
-      container.appendChild(pre);
-      hljs.highlightElement(code);
+  chatContainer.appendChild(container);
+
+  // Pisah jadi karakter
+  let idx=0;
+  function typeNext(){
+    container.innerHTML = parseMarkdown(content.slice(0, idx++));
+    hljs.highlightAll();
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    if(idx <= content.length){
+      requestAnimationFrame(typeNext);
     }
   }
-
-  chatContainer.appendChild(container);
-  chatContainer.scrollTop=chatContainer.scrollHeight;
+  typeNext();
 }
 
-function typeEffect(text, callback){
-  let idx=0;
-  let current="";
-  let interval=setInterval(()=>{
-    current+=text[idx++];
-    chatContainer.lastChild.textContent=current;
-    chatContainer.scrollTop=chatContainer.scrollHeight;
-    if(idx>=text.length){
-      clearInterval(interval);
-      if(callback) callback();
-    }
-  },30);
+// Markdown ke HTML simple + code block
+function parseMarkdown(text){
+  return text
+    .replace(/```(\w+)?\n([\s\S]*?)```/g,(m,lang,code)=>{
+      return `<pre><button class="copy-btn" onclick="navigator.clipboard.writeText(\`${code.replace(/`/g,'\\`')}\`)">Copy</button><code class="language-${lang||''}">${code.replace(/</g,'&lt;')}</code></pre>`;
+    })
+    .replace(/\*\*(.*?)\*\*/g,'<b>$1</b>')
+    .replace(/\*(.*?)\*/g,'<i>$1</i>')
+    .replace(/\n/g,'<br>');
 }
 
 async function sendMessage(){
@@ -163,9 +147,9 @@ async function sendMessage(){
       const data=await res.json();
       if(data.status){
         let clean=(data.response||'No response').replace(/<think>[\s\S]*?<\/think>/,'').trim();
-        addAIMessage(clean);
-      }else addAIMessage(data.error||'Error');
-    }catch(e){addAIMessage('Error connecting to AI.');}
+        addAIMessageAnimated(clean);
+      }else addAIMessageAnimated(data.error||'Error');
+    }catch(e){addAIMessageAnimated('Error connecting to AI.');}
   }
 }
 </script>
