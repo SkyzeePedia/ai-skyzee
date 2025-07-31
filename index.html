@@ -3,96 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Skyzee AI 3D Chat</title>
+<title>Skyzee AI Chat</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 <style>
     *{margin:0;padding:0;box-sizing:border-box;}
-    body,html{height:100%;width:100%;font-family:'Segoe UI',sans-serif;background:#0a0a0f;overflow:hidden;display:flex;}
-
-    /* SIDEBAR */
-    #sidebar{
-        width:260px;background:#111;color:#fff;height:100%;
-        box-shadow:2px 0 15px rgba(0,0,0,0.7);
-        display:flex;flex-direction:column;transition:0.4s;z-index:5;
-        position:fixed;left:-260px;top:0;
-    }
+    body,html{height:100%;width:100%;background:#0a0a0f;display:flex;font-family:'Segoe UI',sans-serif;overflow:hidden;}
+    #sidebar{width:260px;background:#111;color:#fff;height:100%;display:flex;flex-direction:column;position:fixed;left:-260px;top:0;transition:.3s;z-index:5;}
     #sidebar.active{left:0;}
-    #sidebar-header{
-        padding:20px;font-weight:bold;font-size:18px;border-bottom:1px solid rgba(255,255,255,0.1);
-        display:flex;align-items:center;justify-content:space-between;
-    }
-    #sidebar-header i{cursor:pointer;transition:0.2s;}
-    #sidebar-header i:hover{transform:scale(1.2);color:#0ff;}
-    #sidebar .chat-list{flex:1;overflow-y:auto;padding:10px;}
-    .chat-item{
-        padding:12px 15px;border-radius:8px;cursor:pointer;font-size:14px;
-        margin-bottom:8px;transition:0.2s;background:rgba(255,255,255,0.05);
-    }
+    #sidebar-header{padding:20px;font-weight:bold;font-size:18px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;align-items:center;}
+    #sidebar-header i{cursor:pointer;}
+    #chat-list{flex:1;overflow-y:auto;padding:10px;}
+    .chat-item{padding:12px;margin-bottom:8px;border-radius:8px;background:rgba(255,255,255,0.05);cursor:pointer;font-size:14px;}
     .chat-item:hover{background:rgba(0,255,255,0.2);}
-    #new-chat-btn{
-        padding:15px;margin:15px;text-align:center;border-radius:8px;
-        cursor:pointer;font-size:14px;border:1px dashed rgba(255,255,255,0.2);
-        transition:0.3s;
-    }
-    #new-chat-btn:hover{background:rgba(0,255,255,0.2);}
-
-    /* MAIN */
-    #main{flex:1;margin-left:0;display:flex;flex-direction:column;height:100%;width:100%;}
-    header{
-        height:60px;flex-shrink:0;background:#111;display:flex;align-items:center;justify-content:space-between;
-        padding:0 20px;box-shadow:0 2px 15px rgba(0,0,0,0.6);position:relative;z-index:2;color:white;
-    }
-    header h1{font-size:18px;}
-    header i{font-size:20px;cursor:pointer;transition:0.2s;}
-    header i:hover{color:#0ff;transform:scale(1.2);}
-
-    .chat-container{
-        flex:1;overflow-y:auto;padding:30px 20px;
-        display:flex;flex-direction:column;gap:15px;scroll-behavior:smooth;
-        background:linear-gradient(135deg,#0a0a0f,#1a1a2e);
-    }
-    .message{
-        max-width:70%;padding:15px 18px;border-radius:20px;
-        word-wrap:break-word;white-space:pre-wrap;font-size:15px;line-height:1.5;position:relative;
-        animation:fadeIn 0.3s ease-in-out;box-shadow:0 0 15px rgba(0,255,255,0.15);
-    }
-    .user{background:#0ff;color:#000;margin-left:auto;box-shadow:0 0 15px rgba(0,255,255,0.5);}
-    .ai{background:#222;color:#fff;margin-right:auto;box-shadow:0 0 15px rgba(0,255,255,0.2);}
-    .typing{border-right:2px solid #0ff;animation:blink 0.7s infinite;}
-    @keyframes blink{50%{border-color:transparent;}}
+    #new-chat-btn{padding:15px;margin:15px;border:1px dashed rgba(255,255,255,0.2);text-align:center;border-radius:8px;cursor:pointer;}
+    #main{flex:1;display:flex;flex-direction:column;width:100%;}
+    header{height:60px;background:#111;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;}
+    .chat-container{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:15px;background:linear-gradient(135deg,#0a0a0f,#1a1a2e);}
+    .message{max-width:75%;padding:15px;border-radius:20px;white-space:pre-wrap;line-height:1.5;animation:fadeIn .3s;}
+    .user{background:#0ff;color:#000;margin-left:auto;box-shadow:0 0 15px rgba(0,255,255,.5);}
+    .ai{background:#222;color:#fff;margin-right:auto;box-shadow:0 0 15px rgba(0,255,255,.2);}
+    .code-block{background:#1e1e1e;border-radius:12px;overflow:hidden;position:relative;}
+    .code-header{background:#333;color:#fff;font-size:12px;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;}
+    .copy-btn{cursor:pointer;background:#0ff;color:#000;border:none;border-radius:4px;padding:2px 6px;font-size:12px;}
+    pre{margin:0;padding:12px;overflow-x:auto;font-size:13px;}
+    .preview-frame{width:100%;height:200px;border:none;border-top:1px solid #444;}
+    .chat-input{display:flex;padding:15px;background:#111;border-top:1px solid rgba(255,255,255,0.1);}
+    .chat-input input{flex:1;padding:15px 20px;border-radius:25px;border:none;outline:none;background:#000;color:#0ff;}
+    #send-btn{width:50px;height:50px;margin-left:10px;border:none;border-radius:50%;background:#0ff;color:#000;font-size:18px;cursor:pointer;}
     @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
-
-    .chat-input{
-        display:flex;align-items:center;gap:10px;padding:15px 20px;background:#111;
-        border-top:1px solid rgba(255,255,255,0.1);flex-shrink:0;
-    }
-    .chat-input input[type=text]{
-        flex:1;padding:15px 20px;border-radius:25px;border:1px solid rgba(255,255,255,0.2);
-        outline:none;font-size:15px;background:#000;color:#0ff;
-        box-shadow:0 0 10px rgba(0,255,255,0.3) inset;
-    }
-    .chat-input input[type=text]:focus{border-color:#0ff;box-shadow:0 0 15px rgba(0,255,255,0.6) inset;}
-    #send-btn{
-        width:50px;height:50px;border:none;border-radius:50%;cursor:pointer;
-        background:#0ff;color:black;font-size:18px;transition:0.2s;
-        box-shadow:0 0 15px rgba(0,255,255,0.5);
-    }
-    #send-btn:hover{transform:scale(1.05);box-shadow:0 0 25px rgba(0,255,255,0.8);}
 </style>
 </head>
 <body>
 
-<!-- SIDEBAR -->
+<!-- Sidebar -->
 <div id="sidebar">
     <div id="sidebar-header">
         <span>Chats</span>
         <i class="fas fa-times" onclick="toggleSidebar()"></i>
     </div>
-    <div class="chat-list" id="chat-list"></div>
+    <div id="chat-list"></div>
     <div id="new-chat-btn" onclick="newChat()">+ New Chat</div>
 </div>
 
-<!-- MAIN -->
+<!-- Main Chat -->
 <div id="main">
     <header>
         <i class="fas fa-bars" onclick="toggleSidebar()"></i>
@@ -110,103 +64,74 @@
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script>
 const chatContainer=document.getElementById('chat-container');
 const chatInput=document.getElementById('chat-input');
 const sendBtn=document.getElementById('send-btn');
-const chatList=document.getElementById('chat-list');
 
-let chatHistory=[{title:'New Chat',messages:[]}];
-let currentChat=0;
-
-function toggleSidebar(){
-    document.getElementById('sidebar').classList.toggle('active');
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('active');}
+function addMessage(content,type='ai'){ 
+    const div=document.createElement('div');
+    div.className='message '+type;
+    // Cek apakah ini code block
+    if(content.match(/```([\s\S]*?)```/)){
+        div.innerHTML=renderCode(content);
+    }else{
+        div.textContent=content;
+    }
+    chatContainer.appendChild(div);
+    chatContainer.scrollTop=chatContainer.scrollHeight;
+    hljs.highlightAll();
 }
-
-function newChat(){
-    chatHistory.push({title:'New Chat',messages:[]});
-    currentChat=chatHistory.length-1;
-    chatContainer.innerHTML='<div class="message ai">Hi! ⚡ Welcome to Skyzee AI.</div>';
-    renderChatList();
-    toggleSidebar();
-}
-
-function renderChatList(){
-    chatList.innerHTML='';
-    chatHistory.forEach((chat,i)=>{
-        const div=document.createElement('div');
-        div.className='chat-item';
-        div.textContent=chat.title;
-        div.onclick=()=>{
-            currentChat=i;
-            loadChat(i);
-            toggleSidebar();
+function renderCode(text){
+    return text.replace(/```(\w+)?\n([\s\S]*?)```/g,(m,lang,code)=>{
+        const safeLang=lang||'plaintext';
+        let preview='';
+        if(safeLang==='html'){
+            preview=`<iframe class="preview-frame" srcdoc="${encodeURIComponent(code)}"></iframe>`;
         }
-        chatList.appendChild(div);
+        return `<div class="code-block">
+            <div class="code-header">${safeLang.toUpperCase()} <button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+            <pre><code class="${safeLang}">${code.replace(/</g,'&lt;')}</code></pre>${preview}
+        </div>`;
     });
 }
-
-function loadChat(index){
-    chatContainer.innerHTML='';
-    chatHistory[index].messages.forEach(m=>{
-        const msg=document.createElement('div');
-        msg.className='message '+m.type;
-        msg.textContent=m.text;
-        chatContainer.appendChild(msg);
-    });
-    chatContainer.scrollTop=chatContainer.scrollHeight;
-}
-
-function addMessage(content,type='ai'){
-    const msg=document.createElement('div');
-    msg.className='message '+type;
-    msg.textContent=content;
-    chatContainer.appendChild(msg);
-    chatContainer.scrollTop=chatContainer.scrollHeight;
-    chatHistory[currentChat].messages.push({text:content,type});
-    if(type==='user') chatHistory[currentChat].title=content.slice(0,20);
-    renderChatList();
-    return msg;
+function copyCode(btn){
+    const code=btn.closest('.code-block').querySelector('code').innerText;
+    navigator.clipboard.writeText(code);
+    btn.textContent='Copied!';
+    setTimeout(()=>btn.textContent='Copy',2000);
 }
 
 async function sendMessage(){
-    const question=chatInput.value.trim();
-    if(!question)return;
-    addMessage(question,'user');
-    chatInput.value='';
-
-    const typing=addMessage('...','ai');
-    typing.classList.add('typing');
+    const question=chatInput.value.trim();if(!question)return;
+    addMessage(question,'user');chatInput.value='';
+    const loading=addMessage('Typing...','ai');
 
     try{
         const url=`https://apikey.skyzee.xyz/ai/chat-ai?apikey=skyzee&question=${encodeURIComponent(question)}&model=grok-3-mini`;
-        const res=await fetch(url);
-        const data=await res.json();
-        typing.remove();
-
-        let text=(data.response||'No response').replace(/<think>[\s\S]*?<\/think>/,'').trim();
+        const res=await fetch(url);const data=await res.json();
+        loading.remove();
+        let text=(data.response||'No response');
         animateTyping(text);
-    }catch(e){
-        typing.remove();
-        addMessage('Error connecting to AI.','ai');
-    }
+    }catch(e){loading.remove();addMessage('Error connecting to AI.','ai');}
 }
 
 function animateTyping(text){
+    const msg=document.createElement('div');msg.className='message ai';chatContainer.appendChild(msg);
     let idx=0;
-    const msg=addMessage('','ai');
     function type(){
-        msg.textContent=text.slice(0,idx++);
+        const nextChar=text[idx++];
+        msg.innerHTML += nextChar||'';
         chatContainer.scrollTop=chatContainer.scrollHeight;
-        if(idx<=text.length) setTimeout(type,20);
-    }
-    type();
+        if(idx<text.length){setTimeout(type,20);}
+        else{msg.innerHTML=renderCode(msg.innerText);hljs.highlightAll();}
+    } type();
 }
 
-sendBtn.addEventListener('click',sendMessage);
+sendBtn.onclick=sendMessage;
 chatInput.addEventListener('keypress',e=>{if(e.key==='Enter')sendMessage();});
-renderChatList();
 </script>
-
 </body>
 </html>
