@@ -1,94 +1,212 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SkyAI Chat</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"/>
-  <style>
-    body { background-color: #343541; color: white; }
-    .sidebar { background-color: #202123; width: 260px; display: flex; flex-direction: column; }
-    .chat-container { background-color: #343541; height: calc(100vh - 100px); overflow-y: auto; padding: 20px; display: flex; flex-direction: column; }
-    .chat-container::-webkit-scrollbar { width: 6px; }
-    .chat-container::-webkit-scrollbar-thumb { background: #565869; border-radius: 3px; }
-    .chat-bubble { max-width: 85%; padding: 15px; border-radius: 12px; margin-bottom: 12px; white-space: pre-wrap; word-wrap: break-word; }
-    .user { background-color: #0d6efd; align-self: flex-end; color: white; }
-    .bot { background-color: #444654; align-self: flex-start; color: white; position: relative; }
-    .input-area { background-color: #343541; border-top: 1px solid #565869; padding: 15px; }
-    .input-wrapper { display: flex; align-items: center; background: #40414f; border-radius: 12px; padding: 5px 10px; }
-    #userInput { flex: 1; background: transparent; border: none; outline: none; color: white; padding: 10px; }
-    #sendBtn { padding: 10px 15px; border-radius: 8px; }
-    #sendBtn:disabled { background-color: #2d2d2d; color: #666; cursor: not-allowed; }
-    #sendBtn:enabled { background-color: black; color: white; cursor: pointer; }
-    .code-box { background: #0f172a; border-radius: 10px; margin-top: 8px; position: relative; overflow: hidden; border: 1px solid #2d3748; }
-    .copy-btn, .preview-btn { position: absolute; top: 8px; font-size: 12px; padding: 4px 8px; border-radius: 6px; cursor: pointer; }
-    .copy-btn { right: 8px; background: #1e293b; color: white; }
-    .preview-btn { right: 80px; background: #2563eb; color: white; }
-    pre { overflow-x: auto; padding: 12px; font-size: 14px; color: #d1d5db; }
-    code { font-family: monospace; }
-    .file-preview img { max-height: 100px; margin: 5px; border-radius: 8px; }
-    /* Loading dots ala ChatGPT */
-    .loading-dots span { animation: blink 1s infinite; }
-    .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
-    .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes blink { 0%, 80%, 100% { opacity: 0; } 40% { opacity: 1; } }
-    /* Responsif */
-    @media(max-width: 768px){
-      .sidebar { width: 60px; }
-      .sidebar span { display: none; }
-      .sidebar button span { display: none; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkyAI IDE Glow Glitch</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{
+    background: radial-gradient(circle at top, #101020, #050505);
+    color:#fff;padding:30px;
+    display:flex;flex-direction:column;align-items:center;
+}
+h2{font-size:24px;margin-bottom:5px;text-shadow:0 0 8px #0ff;}
+p{color:#ccc;margin-bottom:20px;text-align:center;max-width:600px;}
+
+/* Tabs IDE */
+.ide-container{
+    width:90%;max-width:900px;
+    background:rgba(20,20,20,0.7);
+    border-radius:15px;overflow:hidden;
+    backdrop-filter:blur(15px);
+    border:1px solid rgba(0,255,255,0.1);
+    box-shadow:0 0 20px rgba(0,255,255,0.2);
+    margin-bottom:30px;
+}
+.ide-tabs{display:flex;background:rgba(0,255,255,0.05);}
+.ide-tabs button{
+    flex:1;padding:10px;border:none;cursor:pointer;
+    background:none;color:#0ff;transition:0.2s;font-weight:600;
+}
+.ide-tabs button.active{background:rgba(0,255,255,0.2);color:#fff;}
+.ide-tabs button:hover{background:rgba(0,255,255,0.1);}
+.ide-content{padding:15px;display:none;}
+.ide-content.active{display:block;}
+pre{max-height:400px;overflow:auto;font-size:14px;}
+iframe.preview{width:100%;height:200px;border:none;background:white;display:block;margin-top:10px;}
+
+.ide-buttons{
+    display:flex;gap:10px;margin-top:10px;
+}
+.ide-buttons button{
+    flex:1;background:#0ff;color:black;border:none;
+    padding:8px;border-radius:8px;font-weight:bold;
+    cursor:pointer;transition:0.2s;
+}
+.ide-buttons button:hover{background:white;}
+
+/* Chat Glow Glitch */
+.chat-container{
+    width:400px;height:600px;
+    background:rgba(0,0,0,0.3);backdrop-filter:blur(20px);
+    border-radius:20px;border:1px solid rgba(0,255,255,0.2);
+    display:flex;flex-direction:column;overflow:hidden;
+    box-shadow:0 0 30px rgba(0,255,255,0.3);margin-top:40px;
+}
+.chat-header{text-align:center;padding:15px;background:rgba(0,255,255,0.1);font-weight:600;color:#0ff;text-shadow:0 0 5px #0ff;}
+.chat-box{flex:1;padding:15px;overflow-y:auto;}
+.msg{margin:8px 0;padding:10px 14px;border-radius:12px;max-width:80%;line-height:1.4;white-space:pre-wrap;backdrop-filter:blur(10px);position:relative;}
+.user{background:rgba(0,255,255,0.2);color:#0ff;margin-left:auto;border-bottom-right-radius:0;text-shadow:0 0 5px #0ff;}
+.bot{background:rgba(255,0,100,0.2);color:#f69;margin-right:auto;border-bottom-left-radius:0;text-shadow:0 0 5px #f69;}
+.typing{border-right:2px solid #f69;animation:blink 0.8s infinite;}
+@keyframes blink{50%{border-color:transparent;}}
+.glitch{position:relative;display:inline-block;}
+.glitch::before,.glitch::after{content:attr(data-text);position:absolute;left:0;width:100%;overflow:hidden;clip:rect(0,0,0,0);}
+.glitch::before{animation:glitchTop 2s infinite linear alternate-reverse;color:#0ff;text-shadow:2px 0 #0ff;}
+.glitch::after{animation:glitchBottom 1.5s infinite linear alternate-reverse;color:#f0f;text-shadow:-2px 0 #f0f;}
+@keyframes glitchTop{0%{clip:rect(0,900px,0,0)}5%{clip:rect(0,900px,80px,0)}10%{clip:rect(0,900px,0,0)}100%{clip:rect(0,900px,0,0)}}
+@keyframes glitchBottom{0%{clip:rect(0,900px,0,0)}5%{clip:rect(0,900px,40px,0)}10%{clip:rect(0,900px,0,0)}100%{clip:rect(0,900px,0,0)}}
+
+.chat-input{display:flex;padding:10px;background:rgba(0,255,255,0.05);}
+.chat-input input{flex:1;padding:10px;border:none;border-radius:10px;outline:none;background:rgba(255,255,255,0.1);color:#fff;}
+.chat-input button{margin-left:10px;background:#0ff;border:none;padding:10px 15px;border-radius:10px;color:black;cursor:pointer;font-weight:bold;transition:0.2s;}
+.chat-input button:hover{background:white;color:black;}
+</style>
 </head>
-<body class="flex h-screen">
+<body>
 
-  <!-- Sidebar -->
-  <div class="sidebar p-4">
-    <div class="flex items-center space-x-2 mb-4 text-white text-lg font-bold">
-      <i class="fas fa-bars"></i>
-      <span>SkyAI</span>
-    </div>
-    <button id="newChat" class="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded mb-4">
-      <i class="fas fa-plus mr-2"></i><span>New Chat</span>
-    </button>
-    <div class="text-gray-400 text-sm mb-2"><i class="fas fa-images mr-1"></i>Perpustakaan Foto</div>
-    <div id="gallery" class="mt-2 grid grid-cols-2 gap-2"></div>
+<h2>SkyAI IDE Glow Glitch Streaming</h2>
+<p>Multi-Tab IDE + Preview + AI Chat Glitch Streaming</p>
+
+<div class="ide-container">
+    <div class="ide-tabs" id="tabs"></div>
+    <div id="contents"></div>
+</div>
+
+<div class="chat-container">
+  <div class="chat-header"><i class="fa-solid fa-robot"></i> SkyAI Chat Glitch</div>
+  <div class="chat-box" id="liveChat"></div>
+  <div class="chat-input">
+      <input type="text" id="liveInput" placeholder="Tulis pertanyaan...">
+      <button onclick="liveSend()">Kirim</button>
   </div>
+</div>
 
-  <!-- Chat Area -->
-  <div class="flex-1 flex flex-col">
-    <div class="chat-container" id="chatBox">
-      <div class="bot chat-bubble">Apa yang bisa saya bantu?</div>
-    </div>
-
-    <!-- Input -->
-    <div class="input-area">
-      <div class="input-wrapper w-full">
-        <input type="file" id="fileInput" class="hidden" multiple>
-        <button onclick="document.getElementById('fileInput').click()" class="text-gray-400 mr-2"><i class="fas fa-paperclip"></i></button>
-        <input type="text" id="userInput" placeholder="Ketik pesan..." autocomplete="off">
-        <button id="sendBtn" disabled><i class="fas fa-paper-plane"></i></button>
-      </div>
-      <div class="file-preview flex p-2" id="filePreview"></div>
-    </div>
-  </div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
 <script>
-const apiBase = "https://apikey.skyzee.xyz/ai/chat-ai"; // endpoint kamu di server Node.js
-const apikey = "skyzee";
-const chatBox = document.getElementById('chatBox');
-const userInput = document.getElementById('userInput');
-const sendBtn = document.getElementById('sendBtn');
-const fileInput = document.getElementById('fileInput');
-const filePreview = document.getElementById('filePreview');
-const gallery = document.getElementById('gallery');
+const codes = {
+  html:`<!DOCTYPE html>
+<html>
+<head><title>SkyAI</title></head>
+<body><h1>Halo SkyAI HTML!</h1></body>
+</html>`,
+  php:`<?php
+echo "Halo dari PHP SkyAI!";
+?>`,
+  js:`console.log("Halo dari JavaScript SkyAI!");`,
+  css:`body{background:#222;color:#fff;font-family:Poppins,sans-serif;}`,
+  json:`{"skyai":"halo","status":true}`,
+  sql:`SELECT * FROM users WHERE status='active';`
+};
 
-// Enable/disable tombol kirim
-userInput.addEventListener("input", () => {
-  sendBtn.disabled = userInput.value.trim() === "";
+// Generate Tabs
+const tabs=document.getElementById('tabs');
+const contents=document.getElementById('contents');
+Object.entries(codes).forEach(([lang,code],i)=>{
+    const btn=document.createElement('button');btn.textContent=lang.toUpperCase();
+    btn.onclick=()=>activateTab(lang);
+    tabs.appendChild(btn);
+
+    const div=document.createElement('div');div.className='ide-content';div.id='content-'+lang;
+    div.innerHTML=`<pre><code class="language-${lang}">${code.replace(/</g,'&lt;')}</code></pre>
+    <div class="ide-buttons">
+        <button onclick="copyCode('${lang}')">Copy</button>
+        <button onclick="downloadCode('${lang}')">Download</button>
+        <button onclick="runCode('${lang}',this)">Run</button>
+    </div>`;
+    contents.appendChild(div);
+    if(lang==='html'||lang==='js'||lang==='css'){
+        const iframe=document.createElement('iframe');
+        iframe.className='preview';iframe.srcdoc=(lang==='html')?code:
+            (lang==='js')?`<script>${code}<\/script>`:`<style>${code}<\/style><div style='padding:10px;color:black;'>Preview CSS aktif</div>`;
+        div.appendChild(iframe);
+    }
+});
+function activateTab(lang){
+    document.querySelectorAll('.ide-tabs button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.ide-content').forEach(c=>c.classList.remove('active'));
+    [...tabs.children][Object.keys(codes).indexOf(lang)].classList.add('active');
+    document.getElementById('content-'+lang).classList.add('active');
+}
+activateTab('html');
+hljs.highlightAll();
+
+// IDE Actions
+function copyCode(lang){navigator.clipboard.writeText(codes[lang]);alert('Code '+lang+' copied!');}
+function downloadCode(lang){
+    const blob=new Blob([codes[lang]],{type:'text/plain'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SkyAI-Code.'+lang;a.click();
+}
+function runCode(lang,btn){
+    const iframe=btn.closest('.ide-content').querySelector('iframe.preview');
+    if(!iframe)return alert('Run hanya untuk HTML/JS/CSS');
+    if(lang==='html')iframe.srcdoc=codes[lang];
+    else if(lang==='js')iframe.srcdoc=`<script>${codes[lang]}<\/script>`;
+    else if(lang==='css')iframe.srcdoc=`<style>${codes[lang]}<\/style><div style="padding:10px;color:black;">Preview CSS aktif</div>`;
+}
+
+// Chat
+const liveChat=document.getElementById('liveChat'),liveInput=document.getElementById('liveInput');
+const BASE_URL="https://apikey.skyzee.xyz/ai/chat-ai",API_KEY="skyzee",MODEL="deepseek-r1";
+
+function addLiveMessage(msg,type,typing=false){
+    const div=document.createElement('div');
+    div.classList.add('msg',type);
+    if(type==='bot')div.classList.add('glitch');
+    if(typing)div.classList.add('typing');
+    div.setAttribute('data-text',msg);
+    div.textContent=msg;
+    liveChat.appendChild(div);
+    liveChat.scrollTop=liveChat.scrollHeight;
+    return div;
+}
+async function typeWriter(div,text,speed=30){
+    div.textContent='';div.setAttribute('data-text','');
+    for(let i=0;i<text.length;i++){
+        div.textContent+=text[i];
+        div.setAttribute('data-text',div.textContent);
+        liveChat.scrollTop=liveChat.scrollHeight;
+        await new Promise(r=>setTimeout(r,speed));
+    }
+    div.classList.remove('typing');
+}
+async function liveSend(){
+    const text=liveInput.value.trim();if(!text)return;
+    addLiveMessage(text,'user');liveInput.value='';
+    const botDiv=addLiveMessage('','bot',true);
+    try{
+        const res=await fetch(`${BASE_URL}?apikey=${API_KEY}&question=${encodeURIComponent(text)}&model=${MODEL}`);
+        const data=await res.json();
+        if(data.status&&data.response){
+            await typeWriter(botDiv,data.response,30);
+        }else{
+            botDiv.classList.remove('typing');
+            botDiv.textContent="⚠️ Error: "+(data.error||"Gagal memuat");
+        }
+    }catch(e){
+        botDiv.classList.remove('typing');
+        botDiv.textContent="⚠️ Koneksi API gagal!";
+    }
+}
+liveInput.addEventListener('keydown',e=>{if(e.key==='Enter')liveSend();});
+</script>
+
+</body>
+</html>  sendBtn.disabled = userInput.value.trim() === "";
 });
 
 // Typewriter effect
